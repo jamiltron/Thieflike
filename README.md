@@ -17,13 +17,14 @@ Usage
 -----
 I've only tried this out on Linux Mint 13, and OSX 10.7.
 
-`$ cabal install
- $ Thieflike`
+`$ cabal install`
+`$ Thieflike`
 
 
 License
 -------
 
 See LICENSE for more details. This project borrows/steals code from Jonas Tullus
-and his awesome screen-cast coding of the game Sokoban which is [licensed](https://github.com/jethr0/Sokoban)
+and his awesome screen-cast coding of the game 
+[Sokoban](https://github.com/jethr0/Sokoban) which is licensed
  under the MIT license. See his [screen-cast](http://www.youtube.com/watch?v=mtvoOIsN-GU&feature=youtu.be) for more.

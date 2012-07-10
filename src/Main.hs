@@ -23,13 +23,16 @@ data Input = Up
 
 data World = World { wHero  :: Coord }
 
+-- a starting world
 genesis = World (0,0)
 
 
+-- We take a world, clear the screen and then draw all
+-- of the world's entities, which right now is just the hero
 drawWorld :: World -> IO ()
-drawWorld w = do
+drawWorld world = do
   clearScreen
-  drawHero $ wHero w
+  drawHero $ wHero world
 
 
 drawHero :: Coord -> IO ()
@@ -40,10 +43,12 @@ drawHero (heroX, heroY) = do
   putStr "@"
 
 
+-- recieve a character and return our Input data structure,
+-- recursing on invalid input
 getInput :: IO Input
 getInput = do
-  c <- getChar
-  case c of
+  char <- getChar
+  case char of
     '\ESC' -> return Esc
     'w'    -> return Up
     's'    -> return Down
@@ -52,15 +57,18 @@ getInput = do
     _      -> getInput
 
 
+-- draw the world, grab input and then handle the input
 gameLoop :: World -> IO ()
-gameLoop w = do
-  drawWorld w
+gameLoop world = do
+  drawWorld world
   input <- getInput
   case input of 
     Esc -> handleExit
-    _   -> handleDir w input
+    _   -> handleDir world input
     
 
+-- when the user wants to exit we give them a thank you
+-- message and then reshow the cursor
 handleExit = do
   clearScreen
   setCursorPosition 0 0
@@ -68,7 +76,14 @@ handleExit = do
   putStrLn "Thank you for playing!"
 
 
-handleDir w@(World h) i = gameLoop (w { wHero = h |+| i })
+-- add the supplied direction to the hero's position, and set that
+-- to be the hero's new position, making sure to limit the hero's
+-- position between 0 and 80 in either direction
+handleDir w@(World hero) input = gameLoop (w { wHero = newCoord })
+  where newCoord         = (newX, newY)
+        (heroX, heroY) = hero |+| input
+        newX             = max 0 (min heroX 80)
+        newY             = max 0 (min heroY 80)
 
 
 main :: IO ()
