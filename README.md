@@ -8,17 +8,14 @@ Description
 -----------
 
 Thieflike is a minimal roguelike written to better understand the process
-of writing a game in Haskell, and seperating console code from gui code, while
-following the principle of Don't Repeat Yourself. This is not meant to be a fully-featured 
+of writing a game in Haskell, and seperating console code from gui code. This is not meant to be a fully-featured 
 roguelike, just something fun.
 
 
 Usage
 -----
-I've only tried this out on Linux Mint 13, and OSX 10.7.
-
-`$ cabal install`
-`$ Thieflike`
+`$ cabal install  
+$ Thieflike`
 
 
 License
