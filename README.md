@@ -14,9 +14,8 @@ roguelike, just something fun.
 
 Usage
 -----
-`$ cabal install  
-
-$ Thieflike`
+$ cabal install    
+$ Thieflike
 
 
 License
