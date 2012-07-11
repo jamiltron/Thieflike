@@ -3,6 +3,8 @@ THIEFLIKE
 
 A roguelike written for learning and fun!
 
+[Tutorial](http://jamiltron.com/2012/07/Code_Us_Some_Roguelike_in_Haskell.html)
+
 
 Description
 -----------
@@ -16,6 +18,8 @@ Usage
 -----
 $ cabal install    
 $ Thieflike
+
+Use 'wasd' to move around, and 'q' to quit.
 
 
 License
