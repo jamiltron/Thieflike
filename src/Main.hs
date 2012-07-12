@@ -14,17 +14,32 @@ data Direction = Up
 data Input = Dir Direction 
            | Exit
 
-data World = World { wHero :: Coord }
+data Hero  = Hero { hPos  :: Coord 
+                  , hTres :: Int
+                  , hHP   :: Int }
 
+data World = World { wHero :: Hero }
+
+
+-- initial hero
+commoner = Hero (0, 0) 0 8
+
+
+-- initial world
+genesis = World commoner
+
+
+-- helper function to pull hero's coord out of a world
+hCoord world = hPos . wHero $ world
 
 -- operator to add 2 coordinates together
 (|+|) :: Coord -> Coord -> Coord
 (|+|) (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
 
 
-drawHero (heroX, heroY) = do
+drawHero hero = do
   clearScreen
-  setCursorPosition heroY heroX
+  uncurry (flip setCursorPosition) (hPos hero)
   setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Vivid Blue ]
   putStr "@"
@@ -54,9 +69,9 @@ dirToCoord Right = (1,  0)
 -- add the supplied direction to the hero's position, 
 -- and set that to be the hero's new position, making 
 -- sure to limit it between 0 and 80 in either direction
-handleDir w@(World hero) dir = gameLoop (w { wHero = newCoord })
+handleDir w@(World h) dir = gameLoop (w { wHero = h {hPos = newCoord } })
   where newCoord       = (newX, newY)
-        (heroX, heroY) = hero |+| dirToCoord dir
+        (heroX, heroY) = hPos h |+| dirToCoord dir
         hConst i       = max 0 (min i 80)
         newX           = hConst heroX
         newY           = hConst heroY
@@ -86,4 +101,4 @@ main = do
   hSetBuffering stdout NoBuffering
   hideCursor
   setTitle "Thieflike"
-  gameLoop $ World (0, 0)
+  gameLoop genesis
