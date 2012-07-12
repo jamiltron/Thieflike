@@ -4,32 +4,11 @@ import Prelude hiding (Either(..))
 import System.Console.ANSI
 import System.IO
 
-type Coord = (Int, Int)
-
-data Direction = Up
-               | Down
-               | Left
-               | Right
-
-data Input = Dir Direction 
-           | Exit
-
-data Hero  = Hero { hPos  :: Coord 
-                  , hTres :: Int
-                  , hHP   :: Int }
-
-data World = World { wHero :: Hero }
-
-
--- initial hero
-commoner = Hero (0, 0) 0 8
-
-
--- initial world
-genesis = World commoner
+import Types
 
 
 -- helper function to pull hero's coord out of a world
+hCoord :: World -> Coord
 hCoord world = hPos . wHero $ world
 
 -- operator to add 2 coordinates together
@@ -37,6 +16,7 @@ hCoord world = hPos . wHero $ world
 (|+|) (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
 
 
+drawHero :: Hero -> IO ()
 drawHero hero = do
   clearScreen
   uncurry (flip setCursorPosition) (hPos hero)
@@ -47,6 +27,7 @@ drawHero hero = do
 
 -- receive a character and return our Input data structure,
 -- recursing on invalid input
+getInput :: IO Input
 getInput = do
   char <- getChar
   case char of
@@ -60,6 +41,7 @@ getInput = do
 
 -- translate a direction to a coordinate so it can be added to
 -- the hero's coordinate to move the hero around
+dirToCoord :: Direction -> Coord
 dirToCoord Up    = (0, -1)
 dirToCoord Down  = (0,  1)
 dirToCoord Left  = (-1, 0)
@@ -69,7 +51,8 @@ dirToCoord Right = (1,  0)
 -- add the supplied direction to the hero's position, 
 -- and set that to be the hero's new position, making 
 -- sure to limit it between 0 and 80 in either direction
-handleDir w@(World h) dir = gameLoop (w { wHero = h {hPos = newCoord } })
+handleDir :: World -> Direction -> IO ()
+handleDir w@(World h _) dir = gameLoop (w { wHero = h {hPos = newCoord } })
   where newCoord       = (newX, newY)
         (heroX, heroY) = hPos h |+| dirToCoord dir
         hConst i       = max 0 (min i 80)
@@ -79,6 +62,7 @@ handleDir w@(World h) dir = gameLoop (w { wHero = h {hPos = newCoord } })
 
 -- when the user wants to exit we give them a thank you
 -- message and then reshow the cursor
+handleExit :: IO ()
 handleExit = do
   clearScreen
   setCursorPosition 0 0
@@ -87,14 +71,15 @@ handleExit = do
   
 
 -- update the game loop to add in the goodbye message
-gameLoop world@(World hero) = do
+gameLoop :: World -> IO ()
+gameLoop world@(World hero _) = do
   drawHero hero
   input <- getInput
   case input of
     Exit    -> handleExit
     Dir dir -> handleDir world dir
 
-
+main :: IO ()
 main = do
   hSetEcho stdin False
   hSetBuffering stdin  NoBuffering
