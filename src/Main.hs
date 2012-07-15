@@ -52,7 +52,7 @@ dirToCoord Right = (1,  0)
 -- and set that to be the hero's new position, making 
 -- sure to limit it between 0 and 80 in either direction
 handleDir :: World -> Direction -> IO ()
-handleDir w@(World h _) dir = gameLoop (w { wHero = h {hPos = newCoord } })
+handleDir w@(World _ h _ _ _) dir = gameLoop (w { wHero = h {hPos = newCoord } })
   where newCoord       = (newX, newY)
         (heroX, heroY) = hPos h |+| dirToCoord dir
         hConst i       = max 0 (min i 80)
@@ -67,12 +67,13 @@ handleExit = do
   clearScreen
   setCursorPosition 0 0
   showCursor
+  setSGR [Reset]
   putStrLn "Thank you for playing!"
   
 
 -- update the game loop to add in the goodbye message
 gameLoop :: World -> IO ()
-gameLoop world@(World hero _) = do
+gameLoop world@(World _ hero _ _ _) = do
   drawHero hero
   input <- getInput
   case input of
