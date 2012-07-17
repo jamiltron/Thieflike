@@ -27,10 +27,10 @@ strToLevel str = foldl populate emptyLevel {lMax=maxXY} asciiMap
 isWall coord lvl   = M.member coord (lWalls lvl)
 
 
-isDStair coord lvl = coord == (lDownStairs lvl)
+isDStair coord lvl = coord == lDownStairs lvl
 
 
-isUStair coord lvl = coord == (lUpStairs lvl)
+isUStair coord lvl = coord == lUpStairs lvl
 
 
 isGold coord lvl = M.member coord (lGold lvl)

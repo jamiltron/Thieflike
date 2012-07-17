@@ -14,14 +14,6 @@ import Types
 (|+|) (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
 
 
-drawHero :: Hero -> IO ()
-drawHero hero = do
-  uncurry (flip setCursorPosition) (hCurrPos hero)
-  setSGR [ SetConsoleIntensity BoldIntensity
-         , SetColor Foreground Vivid Blue ]
-  putChar '@'
-
-
 -- receive a character and return our Input data structure,
 -- recursing on invalid input
 getInput :: IO Input
@@ -49,7 +41,10 @@ dirToCoord Right = (1,  0)
 -- and set that to be the hero's new position, making 
 -- sure to limit it between 0 and 80 in either direction
 handleDir :: World -> Direction -> IO ()
-handleDir w dir = gameLoop (w { wHero = h {hOldPos = (hCurrPos h), hCurrPos = newCoord } })
+handleDir w dir
+  | isWall newCoord (wLevel w) = gameLoop w { wHero = h { hOldPos = hCurrPos h } }
+  | otherwise                  = gameLoop w { wHero = h { hOldPos = hCurrPos h
+                                                        , hCurrPos = newCoord } }
   where 
     h              = wHero w
     newCoord       = (newX, newY)
@@ -73,9 +68,10 @@ handleExit = do
 -- update the game loop to add in the goodbye message
 gameLoop :: World -> IO ()
 gameLoop world = do
-  let hero = wHero world
-  drawCoord world (hCurrPos hero)
-  drawCoord world (hOldPos hero)
+  drawHero world
+  -- let hero = wHero world
+  -- drawCoord world (hCurrPos hero)
+  -- drawCoord world (hOldPos hero)
   input <- getInput
   case input of
     Exit    -> handleExit

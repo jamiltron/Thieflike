@@ -57,7 +57,7 @@ drawChar '\n' = do
          , SetColor Foreground Vivid Black ]
   putStrLn ""
 drawChar _ = do
-  setSGR [ SetConsoleIntensity NormalIntensity
+  setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Vivid Black ]
   putStr " "
 
@@ -66,6 +66,18 @@ drawCoord :: World -> Coord -> IO ()
 drawCoord world coord = do
   uncurry (flip setCursorPosition) coord
   drawChar (coordToChar coord world) 
+  
+
+drawHero :: World -> IO ()
+drawHero world
+  | newPos == oldPos = return ()
+  | otherwise        = do
+    drawCoord world newPos
+    drawCoord world oldPos
+  where
+    hero   = wHero world
+    newPos = hCurrPos hero
+    oldPos = hOldPos  hero
   
 drawWorld world = do
   setCursorPosition 0 0
