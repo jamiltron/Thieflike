@@ -4,12 +4,10 @@ import Prelude hiding (Either(..))
 import System.Console.ANSI
 import System.IO
 
+import Graphics
+import Level
 import Types
 
-
--- helper function to pull hero's coord out of a world
-hCoord :: World -> Coord
-hCoord world = hPos . wHero $ world
 
 -- operator to add 2 coordinates together
 (|+|) :: Coord -> Coord -> Coord
@@ -18,11 +16,10 @@ hCoord world = hPos . wHero $ world
 
 drawHero :: Hero -> IO ()
 drawHero hero = do
-  clearScreen
-  uncurry (flip setCursorPosition) (hPos hero)
+  uncurry (flip setCursorPosition) (hCurrPos hero)
   setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Vivid Blue ]
-  putStr "@"
+  putChar '@'
 
 
 -- receive a character and return our Input data structure,
@@ -52,12 +49,14 @@ dirToCoord Right = (1,  0)
 -- and set that to be the hero's new position, making 
 -- sure to limit it between 0 and 80 in either direction
 handleDir :: World -> Direction -> IO ()
-handleDir w@(World _ h _ _ _) dir = gameLoop (w { wHero = h {hPos = newCoord } })
-  where newCoord       = (newX, newY)
-        (heroX, heroY) = hPos h |+| dirToCoord dir
-        hConst i       = max 0 (min i 80)
-        newX           = hConst heroX
-        newY           = hConst heroY
+handleDir w dir = gameLoop (w { wHero = h {hOldPos = (hCurrPos h), hCurrPos = newCoord } })
+  where 
+    h              = wHero w
+    newCoord       = (newX, newY)
+    (heroX, heroY) = hCurrPos h |+| dirToCoord dir
+    hConst i       = max 0 (min i 80)
+    newX           = hConst heroX
+    newY           = hConst heroY
 
 
 -- when the user wants to exit we give them a thank you
@@ -69,12 +68,14 @@ handleExit = do
   showCursor
   setSGR [Reset]
   putStrLn "Thank you for playing!"
-  
+
 
 -- update the game loop to add in the goodbye message
 gameLoop :: World -> IO ()
-gameLoop world@(World _ hero _ _ _) = do
-  drawHero hero
+gameLoop world = do
+  let hero = wHero world
+  drawCoord world (hCurrPos hero)
+  drawCoord world (hOldPos hero)
   input <- getInput
   case input of
     Exit    -> handleExit
@@ -87,4 +88,7 @@ main = do
   hSetBuffering stdout NoBuffering
   hideCursor
   setTitle "Thieflike"
-  gameLoop genesis
+  clearScreen
+  let genesis' = genesis { wLevel = level1, wLevels = [level1] }
+  drawWorld genesis'
+  gameLoop genesis'
