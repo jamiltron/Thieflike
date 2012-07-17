@@ -17,7 +17,8 @@ executable Thieflike
   main-is:             Main.hs
   hs-source-dirs:      src
   include-dirs:        src/
-  other-modules:       Types
+  other-modules:       Graphics Level Types
   build-depends:       ansi-terminal >= 0.5.0,
                        array >= 0.4.0.0,
-                       base >= 4.0
+                       base >= 4.0,
+                       containers >= 0.4.0.0

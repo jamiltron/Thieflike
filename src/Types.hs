@@ -1,15 +1,10 @@
 module Types where
 
-import qualified Data.Array.Unboxed as A
-import qualified Data.Map as Map
+import qualified Data.Map as M
 
 
 -- x/y coordinate
 type Coord = (Int, Int)
-
-
--- an unboxed array of (x,y) to ascii representation of a tile
-type Level = A.UArray Coord Char
 
 
 -- directions that heros or villians may move
@@ -26,11 +21,12 @@ data Effect = Heal
 
 
 -- our brave protagonist
-data Hero = Hero { hEquip :: Weapon   -- what weapon the hero weilds
+data Hero = Hero { hEquip :: Weapon   -- weapon the hero weilds
                  , hGold  :: Int      -- purse
                  , hHP    :: Int      -- life
                  , hItems :: [Item]  -- inventory
-                 , hPos   :: Coord }  -- location on map
+                 , hCurrPos   :: Coord 
+                 , hOldPos :: Coord }  -- location on map
 
 
 data Input = Dir Direction
@@ -39,6 +35,16 @@ data Input = Dir Direction
 
 data Item = Arms  Weapon
           | Flask Potion
+
+
+data Level = Level { lDepth      :: Int               -- depth of level
+                   , lDownStairs :: Coord
+                   , lUpStairs   :: Coord
+                   , lGold       :: M.Map Coord Int   -- location and amount of $
+                   , lWalls      :: M.Map Coord Char 
+                   , lItems      :: M.Map Coord Item  
+                   , lVillians   :: M.Map Coord Villian
+                   , lMax        :: Coord}
 
 
 -- consumable item, this implementation is based around a direction
@@ -50,15 +56,13 @@ data Potion = Potion { pAmount :: Int
 
 
 -- the entire state of our game world
-data World = World { wGold      :: Map.Map Coord Int
+data World = World { wDepth     :: Int
                    , wHero      :: Hero
-                   , wItems     :: Map.Map Coord Item
-                   , wLevel     :: Level  
-                   , wVillians  :: Map.Map Coord Villian }
+                   , wLevel     :: Level      -- current game level
+                   , wLevels    :: [Level] }  -- all levels
 
-
--- generic enemies, almost the same as heros except that they do not
--- weild items
+                     
+-- enemies, almost the same as heros except that they do not wield items
 data Villian = Villian { vGold  :: Int 
                        , vHP    :: Int
                        , vItems :: [Item]
@@ -70,17 +74,16 @@ data Weapon = Weapon { wDesc   :: String
                      , wToHit  :: Int }
 
 
+emptyLevel = Level 0 (0,0) (0,0) M.empty M.empty M.empty M.empty (0,0)
+
+
 -- bare fists/no weapon
-fists    = Weapon "Knuckles" 0 0
+fists    = Weapon "Bare fists" 0 0
 
 
 -- a world with a basic hero, an empty level, and no items, gold, or villians
-genesis  = World Map.empty commoner Map.empty stage1 Map.empty
-
-
--- a world consisting of the tile (0,0) and a hero
-stage1   = A.array ((0,0), (0,0)) [((0,0), '@')]
+genesis  = World 0 commoner emptyLevel []
 
 
 -- a basic hero with no weapon, no gold, 99 health, no items at (0,0)
-commoner = Hero fists 0 99 [] (0, 0)
+commoner = Hero fists 0 99 [] (2, 2) (2, 2)
