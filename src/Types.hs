@@ -7,6 +7,11 @@ import qualified Data.Map as M
 type Coord = (Int, Int)
 
 
+-- armor provides a static defense in to-hit rolls
+data Armor = Armor { aDefense :: Int 
+                   , aDesc :: String }
+
+
 -- directions that heros or villians may move
 data Direction = Up
                | Down
@@ -14,76 +19,111 @@ data Direction = Up
                | Right
 
 
--- effects used in potions, could also be expanded for magic if that
--- was put into the game
+-- could also be expanded to include secret doors
+data Door = Closed
+          | Open
+
+
+-- effects used in potions, could also be expanded 
+-- for magic if that was put into the game
 data Effect = Heal
             | Harm
 
 
 -- our brave protagonist
-data Hero = Hero { hEquip :: Weapon   -- weapon the hero weilds
-                 , hGold  :: Int      -- purse
-                 , hHP    :: Int      -- life
-                 , hItems :: [Item]  -- inventory
-                 , hCurrPos   :: Coord 
-                 , hOldPos :: Coord }  -- location on map
+data Hero = Hero { hCurrPos :: Coord   -- current location on map
+                 , hGold    :: Int     -- gold in coinpurse 
+                 , hHP      :: Int     -- life
+                 , hItems   :: [Item]  -- inventory
+                 , hOldPos  :: Coord   -- previous location
+                 , hWeild   :: Weapon  -- weapon hero is holding
+                 , hWears   :: Armor } -- armor hero is wearing
 
 
 data Input = Dir Direction
            | Exit
 
 
-data Item = Arms  Weapon
-          | Flask Potion
+data Item = Arm  Armor
+          | Pot  Potion
+          | Weap Weapon
 
 
-data Level = Level { lDepth      :: Int               -- depth of level
-                   , lDownStairs :: Coord
-                   , lUpStairs   :: Coord
-                   , lGold       :: M.Map Coord Int   -- location and amount of $
-                   , lWalls      :: M.Map Coord Char 
-                   , lItems      :: M.Map Coord Item  
-                   , lVillians   :: M.Map Coord Villian
-                   , lMax        :: Coord}
+-- an entire map along with every item/feature on the map aside from the hero
+data Level = Level { lDepth    :: Int                   -- depth of level
+                   , lGold     :: M.Map Coord Int       -- pos and amount of $
+                   , lItems    :: M.Map Coord Item      -- pos of items
+                   , lMax      :: Coord                 -- max x/y of level
+                   , lTiles    :: M.Map Coord Tile      -- features
+                   , lVillians :: M.Map Coord Villian } -- pos of enemies
+                   
 
 
--- consumable item, this implementation is based around a direction
--- numerical effect on who is consuming it, although that could certainly            
--- be abstracted away to make for a more general item
+-- consumable item, based around a direct numerical effects
 data Potion = Potion { pAmount :: Int
                      , pDesc   :: String   
                      , pEffect :: Effect }
+              
+
+data Stairs = Downstairs
+            | Upstairs
+
+
+-- the different kinds of flooring/furniture found throughout the dungeon
+data Tile  = Acid 
+           | Dr   Door 
+           | St   Stairs
+           | Wall
+
+
+-- enemies, almost the same as heros except that they do not wield items
+data Villian = Villian { vCurrPos :: Coord
+                       , vGold    :: Int 
+                       , vHP      :: Int
+                       , vItems   :: [Item]
+                       , vOldPos  :: Coord }
+
+
+data Weapon = Weapon { wDamage :: Int     -- added to dmg rolls on hits
+                     , wDesc   :: String  
+                     , wToHit  :: Int }   -- added to to-hit rolls
 
 
 -- the entire state of our game world
-data World = World { wDepth     :: Int
-                   , wHero      :: Hero
-                   , wLevel     :: Level      -- current game level
-                   , wLevels    :: [Level] }  -- all levels
-
-                     
--- enemies, almost the same as heros except that they do not wield items
-data Villian = Villian { vGold  :: Int 
-                       , vHP    :: Int
-                       , vItems :: [Item]
-                       , vPos   :: Coord }
+data World = World { wDepth  :: Int        -- current level depth
+                   , wHero   :: Hero       -- the player
+                   , wLevel  :: Level      -- current game level
+                   , wLevels :: [Level] }  -- all levels
 
 
-data Weapon = Weapon { wDesc   :: String
-                     , wDamage :: Int 
-                     , wToHit  :: Int }
-
-
-emptyLevel = Level 0 (0,0) (0,0) M.empty M.empty M.empty M.empty (0,0)
+emptyLevel = Level { lDepth    = 0
+                   , lGold     = M.empty
+                   , lItems    = M.empty
+                   , lMax      = (0,0)  
+                   , lTiles    = M.empty
+                   , lVillians = M.empty }
 
 
 -- bare fists/no weapon
-fists    = Weapon "Bare fists" 0 0
+fists = Weapon 0 "Bare fists" 0
 
 
--- a world with a basic hero, an empty level, and no items, gold, or villians
-genesis  = World 0 commoner emptyLevel []
+-- no armor
+rags = Armor 0 "Rags"
 
 
--- a basic hero with no weapon, no gold, 99 health, no items at (0,0)
-commoner = Hero fists 0 99 [] (2, 2) (2, 2)
+-- a basic world used to start the game
+genesis  = World { wDepth  = 0
+           , wHero   = commoner  
+           , wLevel  = emptyLevel
+           , wLevels = [emptyLevel] }  -- all levels
+
+
+-- a basic hero
+commoner = Hero { hCurrPos = (1,1)
+                , hGold   = 0  
+                , hHP     = 10 
+                , hItems  = [] 
+                , hOldPos = (1,1)
+                , hWeild  = fists
+                , hWears  = rags }

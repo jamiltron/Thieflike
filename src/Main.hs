@@ -42,16 +42,18 @@ dirToCoord Right = (1,  0)
 -- sure to limit it between 0 and 80 in either direction
 handleDir :: World -> Direction -> IO ()
 handleDir w dir
-  | isWall newCoord (wLevel w) = gameLoop w { wHero = h { hOldPos = hCurrPos h } }
-  | otherwise                  = gameLoop w { wHero = h { hOldPos = hCurrPos h
-                                                        , hCurrPos = newCoord } }
+  | isWall coord lvl ||
+    isClosedDoor coord lvl = gameLoop w { wHero = h { hOldPos = hCurrPos h } }
+  | otherwise              = gameLoop w { wHero = h { hOldPos  = hCurrPos h
+                                                    , hCurrPos = coord } }
   where 
     h              = wHero w
-    newCoord       = (newX, newY)
-    (heroX, heroY) = hCurrPos h |+| dirToCoord dir
-    hConst i       = max 0 (min i 80)
+    lvl            = wLevel w
+    coord          = (newX, newY)
     newX           = hConst heroX
     newY           = hConst heroY
+    (heroX, heroY) = hCurrPos h |+| dirToCoord dir
+    hConst i       = max 0 (min i 80)
 
 
 -- when the user wants to exit we give them a thank you

@@ -18,19 +18,44 @@ strToLevel str = foldl populate emptyLevel {lMax=maxXY} asciiMap
     maxXY    = (maxX, maxY)
     populate lvl (coord, tile) =
       case tile of
-        '#'   -> lvl { lWalls      = M.insert coord '#' (lWalls lvl) }
-        '>'   -> lvl { lDownStairs = coord  }
-        '<'   -> lvl { lUpStairs   = coord  }
+        '#'   -> lvl { lTiles = M.insert coord Wall            tiles }
+        '>'   -> lvl { lTiles = M.insert coord (St Downstairs) tiles }
+        '<'   -> lvl { lTiles = M.insert coord (St Upstairs)   tiles }
+        '+'   -> lvl { lTiles = M.insert coord (Dr Closed)     tiles }
+        '-'   -> lvl { lTiles = M.insert coord (Dr Open)       tiles }
+        '~'   -> lvl { lTiles = M.insert coord Acid            tiles }
         _     -> lvl
+        where tiles = lTiles lvl
 
 
-isWall coord lvl   = M.member coord (lWalls lvl)
+isAcid coord lvl = case M.lookup coord (lTiles lvl) of
+  Just Acid -> True
+  _         -> False
 
 
-isDStair coord lvl = coord == lDownStairs lvl
+isClosedDoor coord lvl = case M.lookup coord (lTiles lvl) of
+  Just (Dr Closed) -> True
+  _                -> False
 
 
-isUStair coord lvl = coord == lUpStairs lvl
+isOpenDoor coord lvl = case M.lookup coord (lTiles lvl) of
+  Just (Dr Open) -> True
+  _              -> False
+
+
+isWall coord lvl = case M.lookup coord (lTiles lvl) of
+  Just Wall -> True
+  _         -> False
+
+
+isDownstairs coord lvl = case M.lookup coord (lTiles lvl) of
+  Just (St Downstairs) -> True
+  _                    -> False
+
+
+isUpstairs coord lvl = case M.lookup coord (lTiles lvl) of
+  Just (St Upstairs) -> True
+  _                  -> False
 
 
 isGold coord lvl = M.member coord (lGold lvl)
@@ -39,23 +64,28 @@ isGold coord lvl = M.member coord (lGold lvl)
 isVillian coord lvl = M.member coord (lVillians lvl)
 
 
+isArmor coord lvl = case M.lookup coord (lItems lvl) of
+  Just (Arm _) -> True
+  _            -> False
+
+
 isPotion coord lvl = case M.lookup coord (lItems lvl) of
-  Just (Flask _) -> True
-  _              -> False
+  Just (Pot _) -> True
+  _            -> False
 
 
 isWeapon coord lvl = case M.lookup coord (lItems lvl) of
-  Just (Arms _) -> True
+  Just (Weap _) -> True
   _             -> False
                         
             
 map1   = [ "##############"
-         , "#            #          ######"
+         , "#>           #          ######"
          , "#            ############    #"
-         , "#    >                       #"
-         , "#            ############    #"
-         , "#            #          #    #"
-         , "#            #          # <  #"
+         , "#            -          +    #"
+         , "#    ~~      ############    #"
+         , "#     ~~     #          #    #"
+         , "#      ~~    #          # <  #"
          , "##############          ######" ]
             
 

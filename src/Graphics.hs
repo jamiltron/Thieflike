@@ -9,14 +9,17 @@ import Types
 coordToChar :: Coord -> World -> Char
 coordToChar c (World depth hero lvl lvls)
   | hCurrPos hero == c  = '@'
-  | isWall    c lvl     = '#'
-  | isVillian c lvl     = 'v'
-  | isPotion  c lvl     = '!'
-  | isWeapon  c lvl     = ')'
-  | isGold    c lvl     = '$'
-  | isDStair  c lvl     = '<'
-  | isUStair  c lvl     = '>'
-  | otherwise           = ' '
+  | isAcid        c lvl     = '~'
+  | isClosedDoor  c lvl     = '+'
+  | isOpenDoor    c lvl     = '-'
+  | isDownstairs  c lvl     = '<'
+  | isGold        c lvl     = '$'
+  | isPotion      c lvl     = '!'
+  | isUpstairs    c lvl     = '>'
+  | isVillian     c lvl     = 'v'
+  | isWall        c lvl     = '#'
+  | isWeapon      c lvl     = ')'
+  | otherwise               = ' '
 
 
 drawChar :: Char -> IO ()
@@ -39,27 +42,37 @@ drawChar '$' = do
 drawChar 'v' = do
   setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Vivid Red ]
-  putStr "v"
+  putChar 'v'
 drawChar ')' = do
   setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Vivid Cyan ]
-  putStr ")"
+  putChar ')'
 drawChar '>' = do
   setSGR [ SetConsoleIntensity BoldIntensity
-         , SetColor Foreground Vivid Black ]
-  putStr ">"
+         , SetColor Foreground Dull Blue ]
+  putChar '>'
 drawChar '<' = do
   setSGR [ SetConsoleIntensity BoldIntensity
-         , SetColor Foreground Vivid Black ]
-  putStr "<"
+         , SetColor Foreground Dull Cyan ]
+  putChar '<'
 drawChar '\n' = do
+  putChar '\n'
+drawChar '+' = do
   setSGR [ SetConsoleIntensity NormalIntensity
-         , SetColor Foreground Vivid Black ]
-  putStrLn ""
+         , SetColor Foreground Dull Magenta ]
+  putChar '+'
+drawChar '-' = do
+  setSGR [ SetConsoleIntensity NormalIntensity
+         , SetColor Foreground Dull Yellow ]
+  putChar '-'
+drawChar '~' = do
+  setSGR [ SetConsoleIntensity BoldIntensity
+         , SetColor Foreground Vivid Green ]
+  putChar '~'  
 drawChar _ = do
   setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Vivid Black ]
-  putStr " "
+  putChar ' '
 
 
 drawCoord :: World -> Coord -> IO ()
@@ -67,7 +80,7 @@ drawCoord world coord = do
   uncurry (flip setCursorPosition) coord
   drawChar (coordToChar coord world) 
   
-
+  
 drawHero :: World -> IO ()
 drawHero world
   | newPos == oldPos = return ()
@@ -79,6 +92,8 @@ drawHero world
     newPos = hCurrPos hero
     oldPos = hOldPos  hero
   
+    
+drawWorld :: World -> IO ()
 drawWorld world = do
   setCursorPosition 0 0
   mapM_ drawChar (unlines chars)
