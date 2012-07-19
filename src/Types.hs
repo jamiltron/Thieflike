@@ -53,6 +53,7 @@ data Item = Arm  Armor
 data Level = Level { lDepth    :: Int                   -- depth of level
                    , lGold     :: M.Map Coord Int       -- pos and amount of $
                    , lItems    :: M.Map Coord Item      -- pos of items
+                   , lMapped   :: M.Map Coord Bool
                    , lMax      :: Coord                 -- max x/y of level
                    , lTiles    :: M.Map Coord Tile      -- features
                    , lVillians :: M.Map Coord Villian } -- pos of enemies
@@ -99,6 +100,7 @@ data World = World { wDepth  :: Int        -- current level depth
 emptyLevel = Level { lDepth    = 0
                    , lGold     = M.empty
                    , lItems    = M.empty
+                   , lMapped   = M.fromList [((0,0), True)]
                    , lMax      = (0,0)  
                    , lTiles    = M.empty
                    , lVillians = M.empty }
