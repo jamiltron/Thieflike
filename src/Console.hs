@@ -1,4 +1,4 @@
-module Graphics where
+module Console where
 
 import System.Console.ANSI
 
@@ -8,7 +8,7 @@ import Types
 
 coordToChar :: Coord -> World -> Char
 coordToChar c (World depth hero lvl lvls)
-  | hCurrPos hero == c  = '@'
+  | hCurrPos hero == c      = '@'
   | isAcid        c lvl     = '~'
   | isClosedDoor  c lvl     = '+'
   | isOpenDoor    c lvl     = '-'

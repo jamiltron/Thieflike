@@ -4,7 +4,7 @@ import Prelude hiding (Either(..))
 import System.Console.ANSI
 import System.IO
 
-import Graphics
+import Console
 import Level
 import Types
 

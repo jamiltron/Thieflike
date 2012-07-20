@@ -1,8 +1,6 @@
 module Level where
 
 import qualified Data.Map  as M
-import qualified Data.List as L
-import System.Console.ANSI
 
 import Types
 

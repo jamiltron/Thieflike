@@ -9,7 +9,7 @@ type Coord = (Int, Int)
 
 -- armor provides a static defense in to-hit rolls
 data Armor = Armor { aDefense :: Int 
-                   , aDesc :: String }
+                   , aDesc    :: String }
 
 
 -- directions that heros or villians may move
@@ -71,10 +71,10 @@ data Stairs = Downstairs
 
 
 -- the different kinds of flooring/furniture found throughout the dungeon
-data Tile  = Acid 
-           | Dr   Door 
-           | St   Stairs
-           | Wall
+data Tile = Acid 
+          | Dr   Door 
+          | St   Stairs
+          | Wall
 
 
 -- enemies, almost the same as heros except that they do not wield items
