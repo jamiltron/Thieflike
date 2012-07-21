@@ -59,7 +59,7 @@ isUpstairs coord lvl = case M.lookup coord (lTiles lvl) of
 isGold coord lvl = M.member coord (lGold lvl)
 
 
-isVillian coord lvl = M.member coord (lVillians lvl)
+isVillain coord lvl = M.member coord (lVillains lvl)
 
 
 isArmor coord lvl = case M.lookup coord (lItems lvl) of

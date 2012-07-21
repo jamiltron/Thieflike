@@ -16,7 +16,7 @@ coordToChar coord (World _ hero lvl _)
   | isGold        coord lvl     = '$'
   | isPotion      coord lvl     = '!'
   | isUpstairs    coord lvl     = '>'
-  | isVillian     coord lvl     = 'v'
+  | isVillain     coord lvl     = 'v'
   | isWall        coord lvl     = '#'
   | isWeapon      coord lvl     = ')'
   | otherwise                   = ' '

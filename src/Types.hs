@@ -56,7 +56,7 @@ data Level = Level { lDepth    :: Int                   -- depth of level
                    , lMapped   :: M.Map Coord Bool
                    , lMax      :: Coord                 -- max x/y of level
                    , lTiles    :: M.Map Coord Tile      -- features
-                   , lVillians :: M.Map Coord Villian } -- pos of enemies
+                   , lVillains :: M.Map Coord Villain } -- pos of enemies
                    
 
 
@@ -78,7 +78,7 @@ data Tile = Acid
 
 
 -- enemies, almost the same as heros except that they do not wield items
-data Villian = Villian { vCurrPos :: Coord
+data Villain = Villain { vCurrPos :: Coord
                        , vGold    :: Int 
                        , vHP      :: Int
                        , vItems   :: [Item]
@@ -103,7 +103,7 @@ emptyLevel = Level { lDepth    = 0
                    , lMapped   = M.fromList [((0,0), True)]
                    , lMax      = (0,0)  
                    , lTiles    = M.empty
-                   , lVillians = M.empty }
+                   , lVillains = M.empty }
 
 
 -- bare fists/no weapon
