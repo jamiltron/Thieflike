@@ -3,7 +3,7 @@ THIEFLIKE
 
 A roguelike written for learning and fun!
 
-[Tutorial 1](http://jamiltron.com/2012/07/Code_Us_Some_Roguelike_in_Haskell.html)
+[Tutorial 1](http://jamiltron.com/2012/07/Code_Us_Some_Roguelike_in_Haskell.html)   
 [Tutorial 2](http://jamiltron.com/2012/07/Code_Us_Some_Roguelike2.html)
 
 Description
