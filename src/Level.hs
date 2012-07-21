@@ -6,8 +6,8 @@ import Types
 
 -- given a list of strings (assuming a text representation split on newlines)
 -- return a level
-strToLevel :: [String] -> Level
-strToLevel str = foldl populate emptyLevel {lMax=maxXY} asciiMap
+strsToLevel :: [String] -> Level
+strsToLevel str = foldl populate emptyLevel {lMax=maxXY} asciiMap
   where
     asciiMap = concat $ zipWith zip coords str
     coords   = [[(x, y) | x <- [0..]] | y <- [0..]]
@@ -87,4 +87,4 @@ map1   = [ "##############"
          , "##############          ######" ]
             
 
-level1 = strToLevel map1
+level1 = strsToLevel map1
