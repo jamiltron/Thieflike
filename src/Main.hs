@@ -67,13 +67,10 @@ handleExit = do
   putStrLn "Thank you for playing!"
 
 
--- update the game loop to add in the goodbye message
+-- draw the hero, process input, and either recur or exit
 gameLoop :: World -> IO ()
 gameLoop world = do
   drawHero world
-  -- let hero = wHero world
-  -- drawCoord world (hCurrPos hero)
-  -- drawCoord world (hOldPos hero)
   input <- getInput
   case input of
     Exit    -> handleExit
@@ -87,6 +84,6 @@ main = do
   hideCursor
   setTitle "Thieflike"
   clearScreen
-  let genesis' = genesis { wLevel = level1, wLevels = [level1] }
-  drawWorld genesis'
-  gameLoop genesis'
+  let world = genesis { wLevel = level1, wLevels = [level1] }
+  drawWorld world
+  gameLoop world

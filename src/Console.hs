@@ -7,19 +7,19 @@ import Types
 
 
 coordToChar :: Coord -> World -> Char
-coordToChar c (World depth hero lvl lvls)
-  | hCurrPos hero == c      = '@'
-  | isAcid        c lvl     = '~'
-  | isClosedDoor  c lvl     = '+'
-  | isOpenDoor    c lvl     = '-'
-  | isDownstairs  c lvl     = '<'
-  | isGold        c lvl     = '$'
-  | isPotion      c lvl     = '!'
-  | isUpstairs    c lvl     = '>'
-  | isVillian     c lvl     = 'v'
-  | isWall        c lvl     = '#'
-  | isWeapon      c lvl     = ')'
-  | otherwise               = ' '
+coordToChar coord (World _ hero lvl _)
+  | hCurrPos hero == coord      = '@'
+  | isAcid        coord lvl     = '~'
+  | isClosedDoor  coord lvl     = '+'
+  | isOpenDoor    coord lvl     = '-'
+  | isDownstairs  coord lvl     = '<'
+  | isGold        coord lvl     = '$'
+  | isPotion      coord lvl     = '!'
+  | isUpstairs    coord lvl     = '>'
+  | isVillian     coord lvl     = 'v'
+  | isWall        coord lvl     = '#'
+  | isWeapon      coord lvl     = ')'
+  | otherwise                   = ' '
 
 
 drawChar :: Char -> IO ()
@@ -84,8 +84,8 @@ drawCoord world coord = do
 drawHero :: World -> IO ()
 drawHero world
   | newPos == oldPos = return ()
-  | otherwise        = do
-    drawCoord world newPos
+  | otherwise        =  do
+    drawCoord world newPos 
     drawCoord world oldPos
   where
     hero   = wHero world
@@ -98,6 +98,7 @@ drawWorld world = do
   setCursorPosition 0 0
   mapM_ drawChar (unlines chars)
   where
-    lvl = wLevel world
-    chars = [[coordToChar (x,y) world | x <- [0..(fst (lMax lvl))]]
-                                      | y <- [0..(snd (lMax lvl))]]
+    lvl     = wLevel world
+    (x',y') = lMax lvl
+    chars   = [[coordToChar (x,y) world | x <- [0..x']]
+                                        | y <- [0..y']]
