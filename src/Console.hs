@@ -55,8 +55,7 @@ drawChar '<' = do
   setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Dull Cyan ]
   putChar '<'
-drawChar '\n' = do
-  putChar '\n'
+drawChar '\n' = putChar '\n'
 drawChar '+' = do
   setSGR [ SetConsoleIntensity NormalIntensity
          , SetColor Foreground Dull Magenta ]

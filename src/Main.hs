@@ -1,5 +1,6 @@
 module Main where
 
+import Data.Lens.Common ((^.), (^=))
 import Prelude hiding (Either(..))
 import System.Console.ANSI
 import System.IO
@@ -43,9 +44,9 @@ dirToCoord Right = (1,  0)
 handleDir :: World -> Direction -> IO ()
 handleDir w dir
   | isWall coord lvl ||
-    isClosedDoor coord lvl = gameLoop w { wHero = h { hOldPos = hCurrPos h } }
-  | otherwise              = gameLoop w { wHero = h { hOldPos  = hCurrPos h
-                                                    , hCurrPos = coord } }
+    isClosedDoor coord lvl = gameLoop ((posL ^= (w ^. posL)) w)
+ 
+  | otherwise              = gameLoop ((posL ^= coord) w)
   where 
     h              = wHero w
     lvl            = wLevel w

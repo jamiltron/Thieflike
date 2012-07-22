@@ -1,6 +1,8 @@
 module Types where
 
+import Data.Lens.Common
 import qualified Data.Map as M
+
 
 
 -- x/y coordinate
@@ -95,6 +97,17 @@ data World = World { wDepth  :: Int        -- current level depth
                    , wHero   :: Hero       -- the player
                    , wLevel  :: Level      -- current game level
                    , wLevels :: [Level] }  -- all levels
+
+
+heroL :: Lens World Hero
+heroL = lens wHero   (\hero world -> world { wHero = hero })
+
+coordsL :: Lens Hero Coord
+coordsL = lens hCurrPos (\coord hero -> hero { hOldPos  = hCurrPos hero
+                                             , hCurrPos = coord } )
+
+posL :: Lens World Coord
+posL = lens (hCurrPos . wHero) (\coord world -> (heroL ^= (coordsL ^= coord) (world ^. heroL)) world)
 
 
 emptyLevel = Level { lDepth    = 0
