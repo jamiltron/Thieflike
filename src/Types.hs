@@ -36,7 +36,7 @@ data Hero = Hero { hCurrPos :: Coord   -- current location on map
                  , hHP      :: Int     -- life
                  , hItems   :: [Item]  -- inventory
                  , hOldPos  :: Coord   -- previous location
-                 , hWeild   :: Weapon  -- weapon hero is holding
+                 , hWield   :: Weapon  -- weapon hero is holding
                  , hWears   :: Armor } -- armor hero is wearing
 
 
@@ -116,9 +116,9 @@ rags = Armor 0 "Rags"
 
 -- a basic world used to start the game
 genesis  = World { wDepth  = 0
-           , wHero   = commoner  
-           , wLevel  = emptyLevel
-           , wLevels = [emptyLevel] }  -- all levels
+                 , wHero   = commoner  
+                 , wLevel  = emptyLevel
+                 , wLevels = [emptyLevel] }  -- all levels
 
 
 -- a basic hero
@@ -127,5 +127,5 @@ commoner = Hero { hCurrPos = (1,1)
                 , hHP     = 10 
                 , hItems  = [] 
                 , hOldPos = (1,1)
-                , hWeild  = fists
+                , hWield  = fists
                 , hWears  = rags }
