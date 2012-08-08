@@ -9,8 +9,8 @@ import Types
 
 type GridID = (Int, Int)
 
-data Room = Room { rCoords    :: [Coord]
-                 , rGrid      :: GridID
+data Room = Room { rCoords      :: [Coord]
+                 , rGrid        :: GridID
                  , rConnections :: [GridID]} deriving (Show)
             
 -- 1. out of all the rooms, pick a random room
@@ -24,12 +24,12 @@ genRooms rows cols maxX maxY = mapM (uncurry' genRoom) grids
   where 
     xadj = map (*roomH) [0..cols]
     yadj = map (*roomW) [0..rows]
-    rc = rows * cols
+    area = rows * cols
     adjs  = [(x,y) | x <- xadj, y <- yadj]
     pos   = [(c,r) | c <- [0..cols - 1], r <- [0..rows - 1]]
     roomW = maxX `div` cols
     roomH = maxY `div` rows
-    grids = zip4 adjs (replicate rc roomW) (replicate rc roomH) pos
+    grids = zip4 adjs (replicate area roomW) (replicate area roomH) pos
     uncurry' f ((a, b), c, d, e) = f a b c d e
         
 
@@ -45,5 +45,3 @@ genRoom minX minY maxW maxH gID = do
   where
     maxX = minX + maxW
     maxY = minY + maxH
-  
-
