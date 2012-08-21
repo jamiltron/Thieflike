@@ -44,9 +44,9 @@ dirToCoord Right = (1,  0)
 handleDir :: World -> Direction -> IO ()
 handleDir w dir
   | isWall coord lvl ||
-    isClosedDoor coord lvl = gameLoop ((posL ^= (w ^. posL)) w)
+    isClosedDoor coord lvl = gameLoop ((^=) posL (w ^. posL) w)
  
-  | otherwise              = gameLoop ((posL ^= coord) w)
+  | otherwise              = gameLoop ((^=) posL coord w)
   where 
     h              = wHero w
     lvl            = wLevel w

@@ -1,5 +1,6 @@
 module Types where
 
+import qualified Control.Category as C
 import Data.Lens.Common
 import qualified Data.Map as M
 
@@ -100,14 +101,14 @@ data World = World { wDepth  :: Int        -- current level depth
 
 
 heroL :: Lens World Hero
-heroL = lens wHero   (\hero world -> world { wHero = hero })
+heroL = lens wHero  (\hero world -> world { wHero = hero })
 
 coordsL :: Lens Hero Coord
 coordsL = lens hCurrPos (\coord hero -> hero { hOldPos  = hCurrPos hero
                                              , hCurrPos = coord } )
 
 posL :: Lens World Coord
-posL = lens (hCurrPos . wHero) (\coord world -> (heroL ^= (coordsL ^= coord) (world ^. heroL)) world)
+posL = (C..) coordsL heroL
 
 
 emptyLevel = Level { lDepth    = 0
