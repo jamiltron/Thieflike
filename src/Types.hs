@@ -1,9 +1,8 @@
 module Types where
 
-import qualified Control.Category as C
 import Data.Lens.Common
-import qualified Data.Map as M
-
+import qualified Control.Category as C
+import qualified Data.Map         as M
 
 
 -- x/y coordinate
@@ -22,7 +21,7 @@ data Direction = Up
                | Right
 
 
--- could also be expanded to include secret doors
+-- doors, could also be expanded to include secret doors
 data Door = Closed
           | Open
 
@@ -43,6 +42,7 @@ data Hero = Hero { hCurrPos :: Coord   -- current location on map
                  , hWears   :: Armor } -- armor hero is wearing
 
 
+-- player input, right now only movement and quitting the game
 data Input = Dir Direction
            | Exit
 
