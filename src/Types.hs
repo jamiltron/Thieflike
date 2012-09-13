@@ -1,6 +1,8 @@
 module Types where
 
-import qualified Data.Map as M
+import Data.Lens.Common
+import qualified Control.Category as C
+import qualified Data.Map         as M
 
 
 -- x/y coordinate
@@ -19,7 +21,7 @@ data Direction = Up
                | Right
 
 
--- could also be expanded to include secret doors
+-- doors, could also be expanded to include secret doors
 data Door = Closed
           | Open
 
@@ -40,6 +42,7 @@ data Hero = Hero { hCurrPos :: Coord   -- current location on map
                  , hWears   :: Armor } -- armor hero is wearing
 
 
+-- player input, right now only movement and quitting the game
 data Input = Dir Direction
            | Exit
 
@@ -95,6 +98,17 @@ data World = World { wDepth  :: Int        -- current level depth
                    , wHero   :: Hero       -- the player
                    , wLevel  :: Level      -- current game level
                    , wLevels :: [Level] }  -- all levels
+
+
+heroL :: Lens World Hero
+heroL = lens wHero  (\hero world -> world { wHero = hero })
+
+coordsL :: Lens Hero Coord
+coordsL = lens hCurrPos (\coord hero -> hero { hOldPos  = hCurrPos hero
+                                             , hCurrPos = coord } )
+
+posL :: Lens World Coord
+posL = (C..) coordsL heroL
 
 
 emptyLevel = Level { lDepth    = 0
