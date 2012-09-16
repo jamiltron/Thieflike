@@ -1,13 +1,13 @@
 module LevelGen where
 
 import System.Random
-import Data.List (zip4)
 import Control.Monad (mapM)
+import Data.List     (zip4)
 
 import Types
 
 
-type GridID = (Int, Int)
+type GridID = Coord
 
 data Room = Room { rCoords      :: [Coord]
                  , rGrid        :: GridID
@@ -35,8 +35,8 @@ genRooms rows cols maxX maxY = mapM (uncurry' genRoom) grids
 
 genRoom :: Int -> Int -> Int -> Int -> GridID -> IO Room
 genRoom minX minY maxW maxH gID = do
-  xstart <- randomRIO(minX + 1,   maxX - 2)
-  ystart <- randomRIO(minY + 1,   maxY - 2)
+  xstart <- randomRIO(minX   + 1, maxX - 2)
+  ystart <- randomRIO(minY   + 1, maxY - 2)
   xend   <- randomRIO(xstart + 1, maxX - 1)
   yend   <- randomRIO(ystart + 1, maxY - 1)
   return Room { rCoords = [(x,y) | x <- [xstart..xend], y <- [ystart..yend]],
@@ -45,3 +45,4 @@ genRoom minX minY maxW maxH gID = do
   where
     maxX = minX + maxW
     maxY = minY + maxH
+
