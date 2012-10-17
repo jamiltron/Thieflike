@@ -1,13 +1,13 @@
 module Main where
 
-import Data.Lens.Common ((^.), (^=))
-import Prelude hiding (Either(..))
-import System.Console.ANSI
-import System.IO
+import           Data.Lens.Common    ((^.), (^=))
+import           Prelude             hiding (Either (..))
+import           System.Console.ANSI
+import           System.IO
 
-import Console
-import Level
-import Types
+import           Console
+import           Level
+import           Types
 
 
 -- operator to add 2 coordinates together
@@ -38,16 +38,16 @@ dirToCoord Left  = (-1, 0)
 dirToCoord Right = (1,  0)
 
 
--- add the supplied direction to the hero's position, 
--- and set that to be the hero's new position, making 
+-- add the supplied direction to the hero's position,
+-- and set that to be the hero's new position, making
 -- sure to limit it between 0 and 80 in either direction
 handleDir :: World -> Direction -> IO ()
 handleDir w dir
   | isWall coord lvl ||
     isClosedDoor coord lvl = gameLoop ((^=) posL (w ^. posL) w)
- 
+
   | otherwise              = gameLoop ((^=) posL coord w)
-  where 
+  where
     h              = wHero w
     lvl            = wLevel w
     coord          = (newX, newY)

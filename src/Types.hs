@@ -1,7 +1,7 @@
 module Types where
 
-import Data.Lens.Common
 import qualified Control.Category as C
+import           Data.Lens.Common
 import qualified Data.Map         as M
 
 
@@ -10,7 +10,7 @@ type Coord = (Int, Int)
 
 
 -- armor provides a static defense in to-hit rolls
-data Armor = Armor { aDefense :: Int 
+data Armor = Armor { aDefense :: Int
                    , aDesc    :: String }
 
 
@@ -26,7 +26,7 @@ data Door = Closed
           | Open
 
 
--- effects used in potions, could also be expanded 
+-- effects used in potions, could also be expanded
 -- for magic if that was put into the game
 data Effect = Heal
             | Harm
@@ -34,7 +34,7 @@ data Effect = Heal
 
 -- our brave protagonist
 data Hero = Hero { hCurrPos :: Coord   -- current location on map
-                 , hGold    :: Int     -- gold in coinpurse 
+                 , hGold    :: Int     -- gold in coinpurse
                  , hHP      :: Int     -- life
                  , hItems   :: [Item]  -- inventory
                  , hOldPos  :: Coord   -- previous location
@@ -60,36 +60,37 @@ data Level = Level { lDepth    :: Int                   -- depth of level
                    , lMax      :: Coord                 -- max x/y of level
                    , lTiles    :: M.Map Coord Tile      -- features
                    , lVillains :: M.Map Coord Villain } -- pos of enemies
-                   
+
 
 
 -- consumable item, based around a direct numerical effects
 data Potion = Potion { pAmount :: Int
-                     , pDesc   :: String   
+                     , pDesc   :: String
                      , pEffect :: Effect }
-              
+
 
 data Stairs = Downstairs
             | Upstairs
 
 
 -- the different kinds of flooring/furniture found throughout the dungeon
-data Tile = Acid 
-          | Dr   Door 
+data Tile = Acid
+          | Dr   Door
           | St   Stairs
           | Wall
+          | Floor
 
 
 -- enemies, almost the same as heros except that they do not wield items
 data Villain = Villain { vCurrPos :: Coord
-                       , vGold    :: Int 
+                       , vGold    :: Int
                        , vHP      :: Int
                        , vItems   :: [Item]
                        , vOldPos  :: Coord }
 
 
 data Weapon = Weapon { wDamage :: Int     -- added to dmg rolls on hits
-                     , wDesc   :: String  
+                     , wDesc   :: String
                      , wToHit  :: Int }   -- added to to-hit rolls
 
 
@@ -103,9 +104,11 @@ data World = World { wDepth  :: Int        -- current level depth
 heroL :: Lens World Hero
 heroL = lens wHero  (\hero world -> world { wHero = hero })
 
+
 coordsL :: Lens Hero Coord
 coordsL = lens hCurrPos (\coord hero -> hero { hOldPos  = hCurrPos hero
                                              , hCurrPos = coord } )
+
 
 posL :: Lens World Coord
 posL = (C..) coordsL heroL
@@ -115,7 +118,7 @@ emptyLevel = Level { lDepth    = 0
                    , lGold     = M.empty
                    , lItems    = M.empty
                    , lMapped   = M.fromList [((0,0), True)]
-                   , lMax      = (0,0)  
+                   , lMax      = (0,0)
                    , lTiles    = M.empty
                    , lVillains = M.empty }
 
@@ -130,16 +133,16 @@ rags = Armor 0 "Rags"
 
 -- a basic world used to start the game
 genesis  = World { wDepth  = 0
-                 , wHero   = commoner  
+                 , wHero   = commoner
                  , wLevel  = emptyLevel
                  , wLevels = [emptyLevel] }  -- all levels
 
 
 -- a basic hero
 commoner = Hero { hCurrPos = (1,1)
-                , hGold   = 0  
-                , hHP     = 10 
-                , hItems  = [] 
+                , hGold   = 0
+                , hHP     = 10
+                , hItems  = []
                 , hOldPos = (1,1)
                 , hWield  = fists
                 , hWears  = rags }

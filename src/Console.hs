@@ -1,9 +1,9 @@
 module Console where
 
-import System.Console.ANSI
+import           System.Console.ANSI
 
-import Level
-import Types
+import           Level
+import           Types
 
 
 coordToChar :: Coord -> World -> Char
@@ -19,6 +19,7 @@ coordToChar coord (World _ hero lvl _)
   | isVillain     coord lvl     = 'v'
   | isWall        coord lvl     = '#'
   | isWeapon      coord lvl     = ')'
+  | isFloor       coord lvl     = '.'
   | otherwise                   = ' '
 
 
@@ -31,6 +32,10 @@ drawChar '#' = do
   setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Vivid Black ]
   putChar  '#'
+drawChar '.' = do
+  setSGR [ SetConsoleIntensity BoldIntensity
+         , SetColor Foreground Vivid Black ]
+  putChar  '.'
 drawChar '!' = do
   setSGR [ SetConsoleIntensity BoldIntensity
          , SetColor Foreground Vivid Magenta]

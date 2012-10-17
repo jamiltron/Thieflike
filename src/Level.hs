@@ -1,8 +1,8 @@
 module Level where
 
-import qualified Data.Map  as M
+import qualified Data.Map as M
 
-import Types
+import           Types
 
 -- given a list of strings (assuming a text representation split on newlines)
 -- return a level
@@ -22,6 +22,7 @@ strsToLevel str = foldl populate emptyLevel {lMax=maxXY} asciiMap
         '+'   -> lvl { lTiles = M.insert coord (Dr Closed)     tiles }
         '-'   -> lvl { lTiles = M.insert coord (Dr Open)       tiles }
         '~'   -> lvl { lTiles = M.insert coord Acid            tiles }
+        '.'   -> lvl { lTiles = M.insert coord Floor           tiles }
         _     -> lvl
         where tiles = lTiles lvl
 
@@ -44,6 +45,11 @@ isOpenDoor coord lvl = case M.lookup coord (lTiles lvl) of
 isWall coord lvl = case M.lookup coord (lTiles lvl) of
   Just Wall -> True
   _         -> False
+
+
+isFloor coord lvl = case M.lookup coord (lTiles lvl) of
+  Just Floor -> True
+  _          -> False
 
 
 isDownstairs coord lvl = case M.lookup coord (lTiles lvl) of
@@ -75,16 +81,17 @@ isPotion coord lvl = case M.lookup coord (lItems lvl) of
 isWeapon coord lvl = case M.lookup coord (lItems lvl) of
   Just (Weap _) -> True
   _             -> False
-                        
-            
+
+
 map1   = [ "##############"
-         , "#>           #          ######"
-         , "#            ############    #"
-         , "#            -          +    #"
-         , "#    ~~      ############    #"
-         , "#     ~~     #          #    #"
-         , "#      ~~    #          # <  #"
+         , "#>...........#          ######"
+         , "#............############....#"
+         , "#............-..........+....#"
+         , "#....~~......############....#"
+         , "#.....~~.....#          #....#"
+         , "#......~~....#          #.<..#"
          , "##############          ######" ]
-            
+
 
 level1 = strsToLevel map1
+
