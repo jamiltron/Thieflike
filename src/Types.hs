@@ -18,6 +18,9 @@ type GridID = (Int, Int)
 type Range = (Coord, Coord)
 
 
+type RoomMap = M.Map GridID Room
+
+
 -- a map detailing which grid segments are connected
 type Connections = M.Map GridID (S.Set GridID)
 
@@ -84,6 +87,13 @@ data Level = Level { lDepth    :: Int                   -- depth of level
 data Potion = Potion { pAmount :: Int
                      , pDesc   :: String
                      , pEffect :: Effect }
+
+
+-- data to hold room information during level generation
+data Room = Room { rCorners     :: Range
+                 , rConnections :: S.Set GridID
+                 , rID          :: GridID
+                 } deriving (Show)
 
 
 data Stairs = Downstairs

@@ -8,19 +8,11 @@ import           System.Random
 
 import           Types
 
-data Room = Room { rCorners :: Range
-                 , rConnections :: S.Set GridID
-                 , rID      :: GridID
-                 } deriving (Show)
-
-
-type RoomMap = M.Map GridID Room
-
 
 go rows cols maxW maxH = do
   rooms <- genRooms rows cols maxW maxH
   conns <- genConnections rows cols
-  putStrLn (digRooms rooms maxW maxH)
+  putStrLn (digRooms (M.elems rooms) maxW maxH)
   return ()
 
 
@@ -73,8 +65,10 @@ adjRooms (x,y) rows cols = filter diffOne xys
 
 -- Randomly generate a list of ranges from min-point to
 -- max-point for all the rooms on our map.
-genRooms :: Int -> Int -> Int -> Int -> IO [Room]
-genRooms rows cols maxX maxY = mapM (uncurry' genRoom) grids
+genRooms :: Int -> Int -> Int -> Int -> IO RoomMap
+genRooms rows cols maxX maxY = do
+  roomList <- mapM (uncurry' genRoom) grids
+  return (foldl M.union M.empty roomList)
   where
     xadj   = map (*roomH) [0..cols - 1]
     yadj   = map (*roomW) [0..rows - 1]
@@ -90,7 +84,7 @@ genRooms rows cols maxX maxY = mapM (uncurry' genRoom) grids
 -- Randomly generate a min-point and max-point for a room with
 -- a given min (x,y), as well as max width and heights and a
 -- grid id
-genRoom :: Coord -> Int -> Int -> GridID -> IO Room
+genRoom :: Coord -> Int -> Int -> GridID -> IO RoomMap
 genRoom c@(minX, minY) maxW maxH gID = do
   xstart <- randomRIO(minX   + 1, maxX - 6)
   ystart <- randomRIO(minY   + 1, maxY - 6)
@@ -99,10 +93,11 @@ genRoom c@(minX, minY) maxW maxH gID = do
   let dx  = xend - xstart
   let dy  = yend - ystart
   if dx < 6 || dy < 6 then genRoom c maxW maxH gID
-    else return Room { rID = gID
-                     , rCorners = ((xstart, ystart),
-                                   (xend, yend))
-                     }
+    else return (M.singleton gID Room { rID = gID
+                                     , rConnections = S.empty
+                                     , rCorners = ((xstart, ystart),
+                                                   (xend, yend))
+                                     })
   where
     maxX  = minX + maxW
     maxY  = minY + maxH
@@ -121,8 +116,8 @@ digRooms rooms maxW maxH = reverse $ foldl (mapper dug) "" coords
         _      -> ' ':s
 
 
-digHalls :: [Room] -> Connections -> String
-digHalls rooms connections = ""
+-- digHalls :: [Room] -> Connections -> String
+-- digHalls rooms connections = ""
 
 
 connectCoords :: Coord -> Coord -> CharMap -> CharMap
@@ -147,7 +142,7 @@ hallInsert (x,y) m = let m' = M.insert (x,y) '.' m
 
 -- expands a room into wall or floor symbols
 expandRoom :: Room -> CharMap
-expandRoom (Room ((x0,y0), (x1,y1)) _) = foldl fill M.empty coords
+expandRoom (Room ((x0,y0), (x1,y1)) _ _) = foldl fill M.empty coords
   where
     coords = concat [[(x,y) | x <- [x0 - 1..x1 + 1]] |
                               y <- [y0 - 1..y1 + 1]]
