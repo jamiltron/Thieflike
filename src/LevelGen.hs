@@ -8,13 +8,13 @@ import           System.Random
 
 import           Types
 
-type GridID        = Coord
-type Range         = (Coord, Coord)
-type Connections   = M.Map GridID (S.Set GridID)
-
 data Room = Room { rCorners :: Range
+                 , rConnections :: S.Set GridID
                  , rID      :: GridID
                  } deriving (Show)
+
+
+type RoomMap = M.Map GridID Room
 
 
 go rows cols maxW maxH = do
@@ -22,6 +22,7 @@ go rows cols maxW maxH = do
   conns <- genConnections rows cols
   putStrLn (digRooms rooms maxW maxH)
   return ()
+
 
 -- Given a row and column length, generate
 -- a random grid id within these bounds
@@ -107,19 +108,45 @@ genRoom c@(minX, minY) maxW maxH gID = do
     maxY  = minY + maxH
 
 
+-- merge all of the symbols for all the rooms into a string
 digRooms :: [Room] -> Int -> Int -> String
-digRooms rooms maxW maxH = reverse (foldl (mapper dug) "" coords)
+digRooms rooms maxW maxH = reverse $ foldl (mapper dug) "" coords
   where
     coords = concat [[(x,y) | x <- [0..maxW]] | y <- [0..maxH]]
-    dug    = foldl M.union M.empty (map expandRange rooms)
+    dug    = foldl M.union M.empty (map expandRoom rooms)
     mapper tmap s (x,y)
       | x == maxW = '\n':s
       | otherwise = case M.lookup (x,y) tmap of
         Just c -> c:s
         _      -> ' ':s
-      
+
+
+digHalls :: [Room] -> Connections -> String
+digHalls rooms connections = ""
+
+
+connectCoords :: Coord -> Coord -> CharMap -> CharMap
+connectCoords (x,y) (w,z) cmap
+  | (x,y) == (w,z) = cmap
+  | dx > dy   = if x < w
+                then connectCoords (x + 1, y) (w, z) (hallInsert (x,y) cmap)
+                else connectCoords (x - 1, y) (w, z) (hallInsert (x,y) cmap)
+  | otherwise = if y < z
+                then connectCoords (x, y + 1) (w, z) (hallInsert (x,y) cmap)
+                else connectCoords (x, y - 1) (w, z) (hallInsert (x,y) cmap)
+  where dx = abs (x - w)
+        dy = abs (y - z)
+
+
+hallInsert :: Coord -> CharMap -> CharMap
+hallInsert (x,y) m = let m' = M.insert (x,y) '.' m
+                     in foldl fill m' [(x-1,y),(x+1,y),(x,y-1),(x,y+1)]
+  where
+    fill lmap (x,y) = M.insertWith (\a b -> if b == ' ' then a else b) (x,y)'#' lmap
+
+
 -- expands a room into wall or floor symbols
-expandRoom :: Room -> M.Map Coord Char
+expandRoom :: Room -> CharMap
 expandRoom (Room ((x0,y0), (x1,y1)) _) = foldl fill M.empty coords
   where
     coords = concat [[(x,y) | x <- [x0 - 1..x1 + 1]] |

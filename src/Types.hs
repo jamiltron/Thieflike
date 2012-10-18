@@ -3,10 +3,27 @@ module Types where
 import qualified Control.Category as C
 import           Data.Lens.Common
 import qualified Data.Map         as M
+import qualified Data.Set         as S
 
 
 -- x/y coordinate
 type Coord = (Int, Int)
+
+
+-- row/column location on map
+type GridID = (Int, Int)
+
+
+-- min and max point for areas
+type Range = (Coord, Coord)
+
+
+-- a map detailing which grid segments are connected
+type Connections = M.Map GridID (S.Set GridID)
+
+
+-- mapping from coord to its charified symbol
+type CharMap = M.Map Coord Char
 
 
 -- armor provides a static defense in to-hit rolls
