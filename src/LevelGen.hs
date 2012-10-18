@@ -34,9 +34,10 @@ randGridID row col = do
 
 -- Insert into a connection map symmetrically, so that
 -- (x,y) -> (w,z) also yields (w,z) -> (x,y)
-symmetricInsert :: Connections -> Coord -> Coord -> Connections
-symmetricInsert m (x,y) (w,z) = let m' = M.insertWith S.union (x,y) (S.singleton (w,z)) m
-                                  in M.insertWith S.union (w,z) (S.singleton (x,y)) m'
+symmInsert :: Connections -> Coord -> Coord -> Connections
+symmInsert m (x,y) (w,z) =
+  let m' = M.insertWith S.union (x,y) (S.singleton (w,z)) m
+  in M.insertWith S.union (w,z) (S.singleton (x,y)) m'
 
 
 -- Generate a map of connections based on our game's specifications
@@ -53,7 +54,7 @@ genIter rows cols conns
     let adjs = adjRooms (x,y) rows cols
     room <- randomRIO(0, length adjs - 1)
     let toID   = adjs !! room
-    let conns' = symmetricInsert conns (x,y) toID
+    let conns' = symmInsert conns (x,y) toID
     genIter rows cols conns'
 
 
@@ -117,10 +118,9 @@ digRooms rooms maxW maxH = reverse (foldl (mapper dug) "" coords)
         Just c -> c:s
         _      -> ' ':s
       
-
-
-expandRange :: Room -> M.Map Coord Char
-expandRange (Room ((x0,y0), (x1,y1)) _) = foldl fill M.empty coords
+-- expands a room into wall or floor symbols
+expandRoom :: Room -> M.Map Coord Char
+expandRoom (Room ((x0,y0), (x1,y1)) _) = foldl fill M.empty coords
   where
     coords = concat [[(x,y) | x <- [x0 - 1..x1 + 1]] |
                               y <- [y0 - 1..y1 + 1]]
@@ -130,5 +130,3 @@ expandRange (Room ((x0,y0), (x1,y1)) _) = foldl fill M.empty coords
         y >= y0 &&
         y <= y1   = M.insert (x,y) '.' lmap
       | otherwise = M.insert (x,y) '#' lmap
-    
-    
