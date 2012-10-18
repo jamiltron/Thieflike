@@ -35,8 +35,8 @@ randGridID row col = do
 -- Insert into a connection map symmetrically, so that
 -- (x,y) -> (w,z) also yields (w,z) -> (x,y)
 symmetricInsert :: Connections -> Coord -> Coord -> Connections
-symmetricInsert m (x,y) (w,z) = let m' = M.insertWith (S.union) (x,y) (S.singleton (w,z)) m
-                                  in M.insertWith (S.union) (w,z) (S.singleton (x,y)) m'
+symmetricInsert m (x,y) (w,z) = let m' = M.insertWith S.union (x,y) (S.singleton (w,z)) m
+                                  in M.insertWith S.union (w,z) (S.singleton (x,y)) m'
 
 
 -- Generate a map of connections based on our game's specifications
@@ -51,7 +51,7 @@ genIter rows cols conns
   | otherwise = do
     (x,y) <- randGridID rows cols
     let adjs = adjRooms (x,y) rows cols
-    room <- randomRIO(0, (length adjs) - 1)
+    room <- randomRIO(0, length adjs - 1)
     let toID   = adjs !! room
     let conns' = symmetricInsert conns (x,y) toID
     genIter rows cols conns'
@@ -94,8 +94,8 @@ genRoom c@(minX, minY) maxW maxH gID = do
   ystart <- randomRIO(minY   + 1, maxY - 6)
   xend   <- randomRIO(xstart + 1, maxX - 1)
   yend   <- randomRIO(ystart + 1, maxY - 1)
-  let dx  = (xend - xstart)
-  let dy  = (yend - ystart)
+  let dx  = xend - xstart
+  let dy  = yend - ystart
   if dx < 6 || dy < 6 then genRoom c maxW maxH gID
     else return Room { rID = gID
                      , rCorners = ((xstart, ystart),
@@ -107,22 +107,28 @@ genRoom c@(minX, minY) maxW maxH gID = do
 
 
 digRooms :: [Room] -> Int -> Int -> String
-digRooms rooms maxW maxH = foldl (mapper dug) "" coords
+digRooms rooms maxW maxH = reverse (foldl (mapper dug) "" coords)
   where
     coords = concat [[(x,y) | x <- [0..maxW]] | y <- [0..maxH]]
     dug    = foldl M.union M.empty (map expandRange rooms)
     mapper tmap s (x,y)
-      | x == maxW = s ++ ['\n']
+      | x == maxW = '\n':s
       | otherwise = case M.lookup (x,y) tmap of
-        Just c -> s ++ [c]
-        _      -> s ++ [' ']
+        Just c -> c:s
+        _      -> ' ':s
       
 
 
 expandRange :: Room -> M.Map Coord Char
 expandRange (Room ((x0,y0), (x1,y1)) _) = foldl fill M.empty coords
   where
-    coords = concat [[(x,y) | x <- [x0..x1]] | y <- [y0..y1]]
-    fill lmap (x,y) = M.insert (x,y) '.' lmap
+    coords = concat [[(x,y) | x <- [x0 - 1..x1 + 1]] |
+                              y <- [y0 - 1..y1 + 1]]
+    fill lmap (x,y)
+      | x >= x0 &&
+        x <= x1 &&
+        y >= y0 &&
+        y <= y1   = M.insert (x,y) '.' lmap
+      | otherwise = M.insert (x,y) '#' lmap
     
     
