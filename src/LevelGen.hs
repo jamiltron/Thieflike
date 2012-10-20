@@ -1,20 +1,60 @@
 module LevelGen where
 
-import           Control.Monad (mapM)
-import           Data.List     (zip4)
-import qualified Data.Map      as M
-import qualified Data.Set      as S
+import           Control.Monad         (mapM, liftM)
+import           Data.Lens.Common      ((^=))
+import           Data.List             (zip4)
+import qualified Data.Map              as M
+import           Data.Maybe            (fromJust)
+import qualified Data.Set              as S
 import           System.Random
+import           System.Random.Shuffle (shuffle')
 
 import           Types
 
 
-go rows cols maxW maxH = do
-  rooms <- genRooms rows cols maxW maxH
-  conns <- genConnections rows cols
-  putStrLn (digRooms (M.elems rooms) maxW maxH)
-  return ()
+(|*|) (a,b) (c,d) = (a*c, b*d)
 
+minHeight = 6
+minWidth  = 6
+
+-- given a set of rows, cols, maxW, maxH, generate
+-- a string representing a new map
+genLevel :: Int -> Int -> Int -> Int -> IO [String]
+genLevel rows cols maxWidth maxHeight = do
+  rooms <- mapM (genRoom rows cols colWidth rowHeight) grid
+  let level = digRooms rooms maxWidth maxHeight
+  return $ lines level
+  where
+    grid      = concat [[(c,r) | c <- [0..cols - 1]] | r <- [0..rows - 1]]
+    colWidth  = maxWidth  `div` cols
+    rowHeight = maxHeight `div` rows
+
+
+genRoom :: Int -> Int -> Int -> Int -> GridID -> IO Room
+genRoom rows cols colWidth rowHeight (c,r) = do
+  xstart <- randomRIO(minX   + 1, minX + (colWidth  - 7))
+  ystart <- randomRIO(minY   + 1, minY + (rowHeight - 7))
+  xend   <- randomRIO(xstart + minWidth, minX + (colWidth   - 1))
+  yend   <- randomRIO(ystart + minHeight, minY + (rowHeight - 1))
+  genConns rows cols (Room S.empty ((xstart,ystart),(xend,yend)) (c,r))
+  where
+    (minX, minY) = (c * colWidth, r * rowHeight)
+
+    
+genConns :: Int -> Int -> Room -> IO Room
+genConns rows cols room@(Room _ _ (c,r)) = do
+  numConns    <- randomRIO (1, length adjs)
+  roomShuffle <- shuffleList adjs
+  return (room { rConns = S.fromList (take numConns roomShuffle) } )
+  where
+    adjs = adjRooms (c,r) rows cols
+
+
+shuffleList :: [a] -> IO [a]
+shuffleList l = do
+  seed <- newStdGen
+  return (shuffle' l (length l) seed)
+  
 
 -- Given a row and column length, generate
 -- a random grid id within these bounds
@@ -23,32 +63,6 @@ randGridID row col = do
   x <- randomRIO(0, col - 1)
   y <- randomRIO(0, row - 1)
   return (x,y)
-
-
--- Insert into a connection map symmetrically, so that
--- (x,y) -> (w,z) also yields (w,z) -> (x,y)
-symmInsert :: Connections -> Coord -> Coord -> Connections
-symmInsert m (x,y) (w,z) =
-  let m' = M.insertWith S.union (x,y) (S.singleton (w,z)) m
-  in M.insertWith S.union (w,z) (S.singleton (x,y)) m'
-
-
--- Generate a map of connections based on our game's specifications
-genConnections :: Int -> Int -> IO Connections
-genConnections rows cols = genIter rows cols M.empty
-
-
--- Helper function to generate connections
-genIter :: Int -> Int -> Connections -> IO Connections
-genIter rows cols conns
-  | rows * cols == M.size conns = return conns
-  | otherwise = do
-    (x,y) <- randGridID rows cols
-    let adjs = adjRooms (x,y) rows cols
-    room <- randomRIO(0, length adjs - 1)
-    let toID   = adjs !! room
-    let conns' = symmInsert conns (x,y) toID
-    genIter rows cols conns'
 
 
 -- Given a grid id and a max row and column length, generate
@@ -61,47 +75,6 @@ adjRooms (x,y) rows cols = filter diffOne xys
                                  y' <- [y-1..y+1],
                                  y' >= 0 && y' < rows]
         diffOne (x',y') = abs(x' - x) + abs(y' - y) == 1
-
-
--- Randomly generate a list of ranges from min-point to
--- max-point for all the rooms on our map.
-genRooms :: Int -> Int -> Int -> Int -> IO RoomMap
-genRooms rows cols maxX maxY = do
-  roomList <- mapM (uncurry' genRoom) grids
-  return (foldl M.union M.empty roomList)
-  where
-    xadj   = map (*roomH) [0..cols - 1]
-    yadj   = map (*roomW) [0..rows - 1]
-    roomW  = maxX `div` cols
-    roomH  = maxY `div` rows
-    area   = rows * cols
-    adjs   = [(x,y) | x <- xadj, y <- yadj]
-    ranges = [(c,r) | c <- [0..cols - 1], r <- [0..rows - 1]]
-    grids  = zip4 adjs (replicate area roomW) (replicate area roomH) ranges
-    uncurry' f ((a, b), c, d, e) = f (a, b) c d e
-
-
--- Randomly generate a min-point and max-point for a room with
--- a given min (x,y), as well as max width and heights and a
--- grid id
-genRoom :: Coord -> Int -> Int -> GridID -> IO RoomMap
-genRoom c@(minX, minY) maxW maxH gID = do
-  xstart <- randomRIO(minX   + 1, maxX - 6)
-  ystart <- randomRIO(minY   + 1, maxY - 6)
-  xend   <- randomRIO(xstart + 1, maxX - 1)
-  yend   <- randomRIO(ystart + 1, maxY - 1)
-  let dx  = xend - xstart
-  let dy  = yend - ystart
-  if dx < 6 || dy < 6 then genRoom c maxW maxH gID
-    else return (M.singleton gID Room { rID = gID
-                                     , rConnections = S.empty
-                                     , rCorners = ((xstart, ystart),
-                                                   (xend, yend))
-                                     })
-  where
-    maxX  = minX + maxW
-    maxY  = minY + maxH
-
 
 -- merge all of the symbols for all the rooms into a string
 digRooms :: [Room] -> Int -> Int -> String
@@ -116,9 +89,18 @@ digRooms rooms maxW maxH = reverse $ foldl (mapper dug) "" coords
         _      -> ' ':s
 
 
--- digHalls :: [Room] -> Connections -> String
--- digHalls rooms connections = ""
-
+-- expands a room into wall or floor symbols
+expandRoom :: Room -> CharMap
+expandRoom (Room _ ((x0,y0), (x1,y1)) _) = foldl fill M.empty coords
+  where
+    coords = concat [[(x,y) | x <- [x0 - 1..x1 + 1]] |
+                              y <- [y0 - 1..y1 + 1]]
+    fill lmap (x,y)
+      | x >= x0 &&
+        x <= x1 &&
+        y >= y0 &&
+        y <= y1   = M.insert (x,y) '.' lmap
+      | otherwise = M.insert (x,y) '#' lmap
 
 connectCoords :: Coord -> Coord -> CharMap -> CharMap
 connectCoords (x,y) (w,z) cmap
@@ -137,18 +119,6 @@ hallInsert :: Coord -> CharMap -> CharMap
 hallInsert (x,y) m = let m' = M.insert (x,y) '.' m
                      in foldl fill m' [(x-1,y),(x+1,y),(x,y-1),(x,y+1)]
   where
-    fill lmap (x,y) = M.insertWith (\a b -> if b == ' ' then a else b) (x,y)'#' lmap
+    fill lmap (x,y) = M.insertWith (\a b -> if b == ' ' then a else b) (x,y) '#' lmap
 
 
--- expands a room into wall or floor symbols
-expandRoom :: Room -> CharMap
-expandRoom (Room ((x0,y0), (x1,y1)) _ _) = foldl fill M.empty coords
-  where
-    coords = concat [[(x,y) | x <- [x0 - 1..x1 + 1]] |
-                              y <- [y0 - 1..y1 + 1]]
-    fill lmap (x,y)
-      | x >= x0 &&
-        x <= x1 &&
-        y >= y0 &&
-        y <= y1   = M.insert (x,y) '.' lmap
-      | otherwise = M.insert (x,y) '#' lmap

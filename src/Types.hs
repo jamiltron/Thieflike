@@ -90,10 +90,14 @@ data Potion = Potion { pAmount :: Int
 
 
 -- data to hold room information during level generation
-data Room = Room { rCorners     :: Range
-                 , rConnections :: S.Set GridID
-                 , rID          :: GridID
+data Room = Room { rConns   :: S.Set GridID
+                 , rCorners :: Range
+                 , rID      :: GridID
                  } deriving (Show)
+
+
+connsL :: Lens Room (S.Set GridID)
+connsL = lens rConns (\gridID room -> room { rConns = (S.union gridID (rConns room)) })
 
 
 data Stairs = Downstairs
