@@ -27,5 +27,5 @@ License
 
 See LICENSE for more details. This project borrows/steals code from Jonas Tullus
 and his awesome screen-cast coding of the game 
-[Sokoban](https://github.com/jethr0/Sokoban) which is licensed
+[Sokoban](https://github.com/codinguncut/Sokoban) which is licensed
  under the MIT license. See his [screen-cast](http://www.youtube.com/watch?v=mtvoOIsN-GU&feature=youtu.be) for more.

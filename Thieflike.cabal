@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                Thieflike
-version:             0.1.0.2
+version:             0.1.0.3
 synopsis:            A minimal roguelike written for learning and fun!
 description:         Move a Hero in a Dungeon, get those Treasures and slay those Villians.
 license:             BSD3
@@ -17,9 +17,10 @@ executable Thieflike
   main-is:             Main.hs
   hs-source-dirs:      src
   include-dirs:        src/
-  other-modules:       Console Level Types
-  build-depends:       ansi-terminal >= 0.5.0,
-                       array >= 0.4.0.0,
-                       base >= 4.0,
-                       containers >= 0.4.0.0,
-                       data-lens >= 2.0.2
+  other-modules:       Console Level Types LevelGen
+  build-depends:       ansi-terminal  >= 0.5.0,
+                       array          >= 0.4.0.0,
+                       base           >= 4.0,
+                       containers     >= 0.4.0.0,
+                       data-lens      >= 2.0.2,
+                       random-shuffle >= 0.0.4
