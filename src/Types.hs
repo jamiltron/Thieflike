@@ -97,7 +97,8 @@ data Room = Room { rConns   :: S.Set GridID
 
 
 connsL :: Lens Room (S.Set GridID)
-connsL = lens rConns (\gridID room -> room { rConns = (S.union gridID (rConns room)) })
+connsL = lens rConns (\gridID room ->
+                       room { rConns = gridID `S.union` rConns room })
 
 
 data Stairs = Downstairs
